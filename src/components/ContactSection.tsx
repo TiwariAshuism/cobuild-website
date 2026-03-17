@@ -76,7 +76,7 @@ const ContactSection = () => {
           </div>
           <button
             type="submit"
-            className="bg-primary text-primary-foreground px-10 py-4 text-sm font-mono uppercase tracking-widest hover:bg-primary/90 transition-colors rounded-sm"
+            className="w-full sm:w-auto inline-flex items-center justify-center rounded-md px-10 py-4 text-sm font-mono uppercase tracking-widest bg-primary text-primary-foreground border border-primary/40 shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_12px_30px_-12px_rgba(0,0,0,0.8)] transition-all hover:brightness-110 hover:shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_40px_-16px_rgba(0,0,0,0.9)] active:translate-y-[1px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background/80 focus-visible:ring-offset-2 focus-visible:ring-offset-foreground"
           >
             SEND TRANSMISSION
           </button>

@@ -12,6 +12,21 @@ export default defineConfig(({ mode }) => ({
     },
   },
   plugins: [react()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+          if (id.includes("/react/") || id.includes("/react-dom/") || id.includes("/scheduler/")) return "react";
+          if (id.includes("/react-router") || id.includes("/react-router-dom/")) return "router";
+          if (id.includes("/@radix-ui/")) return "radix";
+          if (id.includes("/lucide-react/")) return "icons";
+          if (id.includes("/recharts/") || id.includes("/d3-")) return "charts";
+          return "vendor";
+        },
+      },
+    },
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

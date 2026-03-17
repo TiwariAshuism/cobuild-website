@@ -29,22 +29,24 @@ const Index = () => {
         {loading && <LoadingScreen onComplete={handleLoadComplete} />}
       </AnimatePresence>
 
-      <div className={`scroll-smooth ${loading ? "overflow-hidden h-screen" : ""}`}>
-        <Navbar />
-        <HeroSection />
-        <AboutSection />
-        <PhilosophySection />
-        <ProcessSection />
-        <CapabilitiesSection />
-        <ServicesSection />
-        <SoftwareSection />
-        <StartupCTA />
-        <AISection />
-        <ManufacturingSection />
-        <IndustriesSection />
-        <ContactSection />
-        <Footer />
-      </div>
+      {!loading && (
+        <div className="scroll-smooth">
+          <Navbar />
+          <HeroSection />
+          <AboutSection />
+          <PhilosophySection />
+          <ProcessSection />
+          <CapabilitiesSection />
+          <ServicesSection />
+          <SoftwareSection />
+          <StartupCTA />
+          <AISection />
+          <ManufacturingSection />
+          <IndustriesSection />
+          <ContactSection />
+          <Footer />
+        </div>
+      )}
     </>
   );
 };

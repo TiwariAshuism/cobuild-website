@@ -78,14 +78,14 @@ const StepCard = ({ step, index }: { step: typeof steps[0]; index: number }) => 
         whileInView={{ scale: 1 }}
         viewport={{ once: true }}
         transition={{ delay: index * 0.06, type: "spring", stiffness: 300, damping: 20 }}
-        className="w-12 h-12 mx-auto rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-mono font-bold"
+        className="w-12 h-12 mx-auto rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-mono font-bold"
       >
         {step.number}
       </motion.div>
-      <h4 className="text-xs font-semibold text-foreground uppercase tracking-wide leading-tight">
+      <h4 className="text-sm md:text-base font-semibold text-foreground uppercase tracking-wide leading-tight">
         {step.title}
       </h4>
-      <p className="text-[10px] text-muted-foreground leading-relaxed">
+      <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
         {step.description}
       </p>
     </motion.div>
