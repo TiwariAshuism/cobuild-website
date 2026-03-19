@@ -108,7 +108,10 @@ const HeroSection = () => {
                     }}
                     className="flex items-center gap-2 glass-card px-4 py-2 rounded-full"
                   >
-                    <cap.icon className="w-4 h-4 text-primary" />
+                    <cap.icon
+                      className="w-4 h-4 !text-primary"
+                      style={{ color: "hsl(var(--primary))" }}
+                    />
                     <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
                       {cap.label}
                     </span>
@@ -129,7 +132,7 @@ const HeroSection = () => {
                     }}
                     className="space-y-5"
                   >
-                    <p className="text-sm font-mono uppercase tracking-[0.3em] text-primary font-bold">
+                    <p className="text-sm font-mono uppercase tracking-[0.3em] gradient-text font-bold">
                       The Engineering Standard
                     </p>
                     <h1 className="clash-display text-5xl md:text-6xl lg:text-7xl xl:text-8xl leading-[0.9] text-foreground">

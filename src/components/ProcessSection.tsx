@@ -1,5 +1,5 @@
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { motion, useMotionValueEvent, useScroll, useTransform } from "framer-motion";
+import { useRef, useState } from "react";
 
 const steps = [
   { number: "01", title: "Research & Ideation", description: "Market analysis, user research, and concept exploration." },
@@ -18,6 +18,19 @@ const ProcessSection = () => {
     offset: ["start end", "end start"],
   });
   const lineWidth = useTransform(scrollYProgress, [0.15, 0.65], ["0%", "100%"]);
+  const [activeStep, setActiveStep] = useState(0);
+  const activeStepRef = useRef(0);
+
+  // Light up steps progressively as the user scrolls through the section.
+  useMotionValueEvent(scrollYProgress, "change", (latest) => {
+    const clamped = Math.max(0, Math.min(1, latest));
+    const next = Math.floor(clamped * steps.length);
+    const safeNext = Math.min(steps.length - 1, next);
+    if (safeNext !== activeStepRef.current) {
+      activeStepRef.current = safeNext;
+      setActiveStep(safeNext);
+    }
+  });
 
   return (
     <div ref={containerRef}>
@@ -39,17 +52,26 @@ const ProcessSection = () => {
           </motion.div>
 
           {/* Progress line */}
-          <div className="relative mb-12 hidden md:block">
+          <div className="relative mb-12">
             <div className="h-[2px] bg-border w-full rounded-full" />
             <motion.div
-              style={{ width: lineWidth }}
-              className="absolute top-0 left-0 h-[2px] bg-primary rounded-full"
+              style={{
+                width: lineWidth,
+                backgroundImage:
+                  "linear-gradient(90deg, rgb(96 165 250), hsl(214 90% 49%))",
+              }}
+              className="absolute top-0 left-0 h-[2px] rounded-full"
             />
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-6">
             {steps.map((step, i) => (
-              <StepCard key={step.number} step={step} index={i} />
+              <StepCard
+                key={step.number}
+                step={step}
+                index={i}
+                activeStep={activeStep}
+              />
             ))}
           </div>
         </div>
@@ -58,7 +80,15 @@ const ProcessSection = () => {
   );
 };
 
-const StepCard = ({ step, index }: { step: typeof steps[0]; index: number }) => {
+const StepCard = ({
+  step,
+  index,
+  activeStep,
+}: {
+  step: typeof steps[0];
+  index: number;
+  activeStep: number;
+}) => {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -66,6 +96,22 @@ const StepCard = ({ step, index }: { step: typeof steps[0]; index: number }) => 
   });
   const scale = useTransform(scrollYProgress, [0, 1], [0.7, 1]);
   const opacity = useTransform(scrollYProgress, [0, 0.6], [0, 1]);
+
+  const isPast = index <= activeStep;
+  const isCurrent = index === activeStep;
+
+  const circleStyle = isPast
+    ? {
+        backgroundImage:
+          "linear-gradient(135deg, hsl(214 90% 49%), rgb(96 165 250))",
+        borderColor: "hsl(var(--primary) / 0.55)",
+        color: "hsl(var(--primary-foreground))",
+      }
+    : {
+        background: "transparent",
+        borderColor: "hsl(var(--border))",
+        color: "hsl(var(--muted-foreground))",
+      };
 
   return (
     <motion.div
@@ -77,15 +123,33 @@ const StepCard = ({ step, index }: { step: typeof steps[0]; index: number }) => 
         initial={{ scale: 0 }}
         whileInView={{ scale: 1 }}
         viewport={{ once: true }}
-        transition={{ delay: index * 0.06, type: "spring", stiffness: 300, damping: 20 }}
-        className="w-12 h-12 mx-auto rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-mono font-bold"
+        transition={{
+          delay: index * 0.06,
+          type: "spring",
+          stiffness: 300,
+          damping: 20,
+        }}
+        style={circleStyle}
+        animate={{ scale: isCurrent ? 1.07 : isPast ? 1 : 0.98 }}
+        className="w-12 h-12 mx-auto rounded-full border flex items-center justify-center text-xs font-mono font-bold"
       >
         {step.number}
       </motion.div>
-      <h4 className="text-sm md:text-base font-semibold text-foreground uppercase tracking-wide leading-tight">
+
+      <h4
+        className={`text-xs md:text-base font-semibold uppercase tracking-wide leading-tight ${
+          isPast ? "text-foreground" : "text-muted-foreground"
+        }`}
+      >
         {step.title}
       </h4>
-      <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
+
+      <p
+        className="text-[10px] md:text-sm text-muted-foreground leading-relaxed"
+        style={{
+          opacity: isPast ? 1 : 0.85,
+        }}
+      >
         {step.description}
       </p>
     </motion.div>

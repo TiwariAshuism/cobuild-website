@@ -1,5 +1,10 @@
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import {
+  motion,
+  useMotionValueEvent,
+  useScroll,
+  useTransform,
+} from "framer-motion";
+import { useRef, useState } from "react";
 
 const stages = [
   {
@@ -36,11 +41,35 @@ const stages = [
 
 const ManufacturingSection = () => {
   const ref = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({
+  const { scrollYProgress: containerScrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"],
   });
-  const lineHeight = useTransform(scrollYProgress, [0.1, 0.8], ["0%", "100%"]);
+
+  const lineHeight = useTransform(
+    containerScrollYProgress,
+    [0.1, 0.8],
+    ["0%", "100%"],
+  );
+
+  const [activeStage, setActiveStage] = useState(0);
+  const activeStageRef = useRef(0);
+
+  // Light up/activate manufacturing stages progressively while scrolling.
+  useMotionValueEvent(
+    containerScrollYProgress,
+    "change",
+    (latest) => {
+      const clamped = Math.max(0, Math.min(1, latest));
+      const next = Math.floor(clamped * stages.length);
+      const safeNext = Math.min(stages.length - 1, next);
+
+      if (safeNext !== activeStageRef.current) {
+        activeStageRef.current = safeNext;
+        setActiveStage(safeNext);
+      }
+    },
+  );
 
   return (
     <section ref={ref} id="manufacturing" className="py-32">
@@ -73,51 +102,107 @@ const ManufacturingSection = () => {
 
           <div className="space-y-10">
             {stages.map((s, i) => (
-              <motion.div
+              <StageCard
                 key={s.stage}
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ delay: i * 0.1, duration: 0.6 }}
-                className="md:pl-20 relative"
-              >
-                <motion.div
-                  initial={{ scale: 0 }}
-                  whileInView={{ scale: 1 }}
-                  viewport={{ once: true, margin: "-60px" }}
-                  transition={{ delay: i * 0.1 + 0.2, type: "spring", stiffness: 300 }}
-                  className="hidden md:flex absolute left-4 top-2 w-8 h-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-mono font-bold"
-                >
-                  {s.stage}
-                </motion.div>
-                <motion.div
-                  whileHover={{ x: 6, transition: { duration: 0.2 } }}
-                  className="glass-card p-8 rounded-sm"
-                >
-                  <span className="md:hidden text-xs font-mono text-primary mb-2 block">
-                    STAGE {s.stage}
-                  </span>
-                  <h3 className="clash-display text-2xl text-foreground mb-3">{s.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed mb-4 max-w-lg">
-                    {s.description}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {s.details.map((d) => (
-                      <span
-                        key={d}
-                        className="px-3 py-1 text-[10px] font-mono uppercase tracking-wider border border-border rounded-sm text-muted-foreground"
-                      >
-                        {d}
-                      </span>
-                    ))}
-                  </div>
-                </motion.div>
-              </motion.div>
+                stage={s}
+                index={i}
+                activeStage={activeStage}
+              />
             ))}
           </div>
         </div>
       </div>
     </section>
+  );
+};
+
+const StageCard = ({
+  stage,
+  index,
+  activeStage,
+}: {
+  stage: (typeof stages)[0];
+  index: number;
+  activeStage: number;
+}) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "center center"],
+  });
+
+  const scale = useTransform(scrollYProgress, [0, 1], [0.7, 1]);
+  const opacity = useTransform(scrollYProgress, [0, 0.6], [0, 1]);
+
+  const isPast = index <= activeStage;
+  const isCurrent = index === activeStage;
+
+  const circleStyle = isPast
+    ? {
+        backgroundImage:
+          "linear-gradient(135deg, hsl(214 90% 49%), rgb(96 165 250))",
+        borderColor: "hsl(var(--primary) / 0.55)",
+        color: "hsl(var(--primary-foreground))",
+      }
+    : {
+        background: "transparent",
+        borderColor: "hsl(var(--border))",
+        color: "hsl(var(--muted-foreground))",
+      };
+
+  return (
+    <motion.div
+      ref={ref}
+      style={{ scale, opacity }}
+      className="md:pl-20 relative"
+    >
+      <motion.div
+        style={circleStyle}
+        animate={{ scale: isCurrent ? 1.07 : isPast ? 1 : 0.98 }}
+        className="hidden md:flex absolute left-4 top-2 w-8 h-8 rounded-full border items-center justify-center text-xs font-mono font-bold"
+      >
+        {stage.stage}
+      </motion.div>
+
+      <motion.div className="glass-card p-8 rounded-sm">
+        <span
+          className="md:hidden text-xs font-mono mb-2 block"
+          style={{
+            color: isPast
+              ? "hsl(var(--primary))"
+              : "hsl(var(--muted-foreground))",
+          }}
+        >
+          STAGE {stage.stage}
+        </span>
+
+        <h3
+          className={`clash-display text-2xl mb-3 ${
+            isPast ? "text-foreground" : "text-muted-foreground"
+          }`}
+        >
+          {stage.title}
+        </h3>
+
+        <p
+          className="text-sm text-muted-foreground leading-relaxed mb-4 max-w-lg"
+          style={{ opacity: isPast ? 1 : 0.85 }}
+        >
+          {stage.description}
+        </p>
+
+        <div className="flex flex-wrap gap-2">
+          {stage.details.map((d) => (
+            <span
+              key={d}
+              className="px-3 py-1 text-[10px] font-mono uppercase tracking-wider border border-border rounded-sm text-muted-foreground"
+            >
+              {d}
+            </span>
+          ))}
+        </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

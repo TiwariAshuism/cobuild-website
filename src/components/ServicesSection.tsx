@@ -5,7 +5,7 @@ const services = [
   {
     id: "mechanical",
     number: "01",
-    label: "HARDWARE",
+    label: "ENGINEERING",
     title: "Mechanical Engineering",
     tagline: "We design and engineer robust, manufacturable mechanical systems that turn electronic concepts into real-world products.",
     items: [
@@ -99,7 +99,7 @@ const ServicesSection = () => {
           <p className="text-xs font-mono uppercase tracking-[0.3em] text-muted-foreground mb-4">
             Hardware Services
           </p>
-          <h2 className="clash-display text-4xl md:text-5xl text-foreground">
+          <h2 className="clash-display text-4xl md:text-5xl gradient-text">
             Engineering Disciplines
           </h2>
         </motion.div>
@@ -107,16 +107,29 @@ const ServicesSection = () => {
         {/* Service tabs */}
         <div className="flex flex-wrap gap-2 mb-12">
           {services.map((s) => (
+            // Using inline HSL styles for the active state so the "blue" cannot
+            // be muted by Tailwind opacity / theme overrides.
             <button
               key={s.id}
               onClick={() => setActiveService(s.id)}
-              className={`px-4 py-2 text-xs font-mono uppercase tracking-wider rounded-sm border transition-all ${
+              className={`px-4 py-2 rounded-sm border transition-all text-xs font-mono uppercase tracking-wider ${
                 activeService === s.id
-                  ? "bg-primary text-primary-foreground border-primary"
+                  ? "border-primary"
                   : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
               }`}
+              style={
+                activeService === s.id
+                  ? {
+                      backgroundImage:
+                        "linear-gradient(90deg, hsl(var(--primary)) 0%, rgb(96 165 250) 100%)",
+                      backgroundColor: "hsl(var(--primary))",
+                      color: "hsl(var(--primary-foreground))",
+                      borderColor: "hsl(var(--primary))",
+                    }
+                  : undefined
+              }
             >
-              {s.number} {s.title}
+              {s.number} / {s.label}
             </button>
           ))}
         </div>
